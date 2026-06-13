@@ -2,7 +2,7 @@
 
 client_id = "6622b9ec20514b3b06a90c4331aea37f"
 name = "PetFilter"
-application_url = "https://petfilter.vercel.app"
+application_url = "https://petfilter-production.up.railway.app"
 embedded = true
 
 [build]
@@ -18,7 +18,7 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "http://localhost:3000/auth", "https://petfilter.vercel.app/auth" ]
+redirect_urls = [ "http://localhost:3000/auth", "https://petfilter-production.up.railway.app/auth" ]
 
 [app_proxy]
 url = "/proxy"
