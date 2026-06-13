@@ -18,6 +18,7 @@ const shopify = shopifyApp({
   distribution: AppDistribution.AppStore,
   future: {
     expiringOfflineAccessTokens: true,
+    unstable_newEmbeddedAuthStrategy: true,
   },
 });
 
