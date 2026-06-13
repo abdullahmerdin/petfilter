@@ -15,4 +15,4 @@ COPY . .
 
 RUN npm run build
 
-CMD ["npm", "run", "docker-start"]
+CMD ["sh", "-c", "npm run prisma generate && (npm run prisma migrate deploy || echo 'migration skipped') && npm run start"]
