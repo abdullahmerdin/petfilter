@@ -12,7 +12,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const result = await login(request);
-    return { errors: loginErrorMessage(result), isEmbedded };
+    return { errors: loginErrorMessage(result as any), isEmbedded };
   } catch (error) {
     if (error instanceof Response && error.status >= 300 && error.status < 400 && isEmbedded) {
       const location = error.headers.get("Location");
@@ -33,7 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     const result = await login(request);
-    return { errors: loginErrorMessage(result), isEmbedded };
+    return { errors: loginErrorMessage(result as any), isEmbedded };
   } catch (error) {
     if (error instanceof Response && error.status >= 300 && error.status < 400 && isEmbedded) {
       const location = error.headers.get("Location");
@@ -52,10 +52,7 @@ export default function Auth() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [shop, setShop] = useState("");
-
-  const data = actionData || loaderData;
-  const errors = data?.errors;
-  const isEmbedded = data?.isEmbedded;
+  const { errors, isEmbedded } = (actionData || loaderData) as any;
 
   return (
     <AppProvider embedded={false}>
@@ -67,7 +64,7 @@ export default function Auth() {
               label="Shop domain"
               details="example.myshopify.com"
               value={shop}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShop(e.currentTarget.value)}
+              onChange={(e: any) => setShop(e.currentTarget.value)}
               autocomplete="on"
               error={errors?.shop}
             ></s-text-field>
