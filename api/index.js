@@ -1,8 +1,7 @@
 import { createRequestHandler } from "@react-router/express";
+import * as build from "../build/server/index.js";
 
-const handler = createRequestHandler({
-  build: await import("../build/server/index.js"),
+export default createRequestHandler({
+  build,
   mode: process.env.NODE_ENV,
 });
-
-export default handler;
