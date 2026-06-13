@@ -1,16 +1,17 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["build/**"]
+      }
     }
   ],
   "routes": [
-    { "src": "/build/client/(.*)", "dest": "/build/client/$1" },
+    { "src": "/assets/(.*)", "dest": "/build/client/assets/$1" },
     { "src": "/(.*)", "dest": "api/index.js" }
   ],
-  "buildCommand": "bash vercel-build.sh",
-  "installCommand": "npm install",
-  "outputDirectory": "build"
+  "buildCommand": "npm run setup && npm run build",
+  "installCommand": "npm install"
 }
