@@ -113,13 +113,13 @@ type RouteFiles = {
     id: "routes/proxy.pets";
     page: "/proxy/pets";
   };
-  "routes/_index.tsx": {
-    id: "routes/_index";
-    page: "/";
-  };
   "routes/auth.$.tsx": {
     id: "routes/auth.$";
     page: "/auth/*";
+  };
+  "routes/_index.tsx": {
+    id: "routes/_index";
+    page: "/";
   };
   "routes/app.tsx": {
     id: "routes/app";
@@ -170,8 +170,8 @@ type RouteModules = {
   "routes/proxy.badge": typeof import("./app/routes/proxy.badge.tsx");
   "routes/auth.login": typeof import("./app/routes/auth.login/route.tsx");
   "routes/proxy.pets": typeof import("./app/routes/proxy.pets.tsx");
-  "routes/_index": typeof import("./app/routes/_index.tsx");
   "routes/auth.$": typeof import("./app/routes/auth.$.tsx");
+  "routes/_index": typeof import("./app/routes/_index.tsx");
   "routes/app": typeof import("./app/routes/app.tsx");
   "routes/app.onboarding": typeof import("./app/routes/app.onboarding.tsx");
   "routes/app.matching": typeof import("./app/routes/app.matching.tsx");
