@@ -6,30 +6,66 @@ import { Form, useActionData, useLoaderData } from "react-router";
 import { login } from "../../shopify.server";
 import { loginErrorMessage } from "./error.server";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const errors = loginErrorMessage(await login(request));
+const breakoutResponse = (location: string) => new Response(
+  `<html><body><script type="text/javascript">window.top.location.href = ${JSON.stringify(location)};</script></body></html>`,
+  {
+    headers: { "Content-Type": "text/html" },
+  },
+);
 
-  return { errors };
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const isEmbedded = url.searchParams.get("embedded") === "1";
+
+  try {
+    const errors = loginErrorMessage(await login(request));
+    return { errors, isEmbedded };
+  } catch (response) {
+    if (response instanceof Response && response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("Location");
+      if (location && isEmbedded) {
+        return breakoutResponse(location);
+      }
+    }
+    throw response;
+  }
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const errors = loginErrorMessage(await login(request));
+  const formData = await request.clone().formData();
+  const isEmbedded = formData.get("isEmbedded") === "true";
 
-  return {
-    errors,
-  };
+  try {
+    const errors = loginErrorMessage(await login(request));
+    return {
+      errors,
+      isEmbedded
+    };
+  } catch (response) {
+    if (response instanceof Response && response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("Location");
+      if (location && isEmbedded) {
+        return breakoutResponse(location);
+      }
+    }
+    throw response;
+  }
 };
 
 export default function Auth() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [shop, setShop] = useState("");
-  const { errors } = actionData || loaderData;
+
+  // Use data from either action or loader, prioritizing action
+  const errors = actionData?.errors || loaderData?.errors;
+  const isEmbedded = actionData?.isEmbedded ?? loaderData?.isEmbedded;
 
   return (
     <AppProvider embedded={false}>
       <s-page>
         <Form method="post">
+        <input type="hidden" name="isEmbedded" value={String(isEmbedded)} />
         <s-section heading="Log in">
           <s-text-field
             name="shop"
@@ -38,7 +74,7 @@ export default function Auth() {
             value={shop}
             onChange={(e) => setShop(e.currentTarget.value)}
             autocomplete="on"
-            error={errors.shop}
+            error={errors?.shop}
           ></s-text-field>
           <s-button type="submit">Log in</s-button>
         </s-section>
