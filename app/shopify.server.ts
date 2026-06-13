@@ -7,6 +7,15 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
 
+// Lazy session storage — never crashes at app startup even if DB is down
+let _sessionStorage: PrismaSessionStorage | null = null;
+function getSessionStorage(): PrismaSessionStorage {
+  if (!_sessionStorage) {
+    _sessionStorage = new PrismaSessionStorage(prisma);
+  }
+  return _sessionStorage;
+}
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
@@ -14,7 +23,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  sessionStorage: getSessionStorage(),
   distribution: AppDistribution.AppStore,
   future: {
     expiringOfflineAccessTokens: true,
