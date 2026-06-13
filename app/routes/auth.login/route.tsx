@@ -52,7 +52,10 @@ export default function Auth() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [shop, setShop] = useState("");
-  const { errors, isEmbedded } = (actionData || loaderData) as any;
+
+  const data = actionData || loaderData;
+  const errors = data?.errors;
+  const isEmbedded = data?.isEmbedded;
 
   return (
     <AppProvider embedded={false}>
@@ -64,7 +67,7 @@ export default function Auth() {
               label="Shop domain"
               details="example.myshopify.com"
               value={shop}
-              onChange={(e: any) => setShop(e.currentTarget.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShop(e.currentTarget.value)}
               autocomplete="on"
               error={errors?.shop}
             ></s-text-field>
