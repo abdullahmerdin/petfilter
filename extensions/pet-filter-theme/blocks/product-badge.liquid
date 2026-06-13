@@ -1,0 +1,52 @@
+<div class="petfilter-badge-wrapper">
+  {% if shop.metafields.petfilter.enabled == "true" or shop.metafields.petfilter.enabled == blank %}
+    <pet-filter-badge
+      product-id="{{ product.id }}"
+      proxy-url="/apps/pet-filter"
+    >
+      <span class="petfilter-badge-placeholder">{{ block.settings.badge_text | default: 'Pet Friendly' }}</span>
+    </pet-filter-badge>
+  {% endif %}
+</div>
+
+<script>
+  document.querySelectorAll('pet-filter-badge').forEach(async (el) => {
+    const productId = el.getAttribute('product-id');
+    const proxyBase = el.getAttribute('proxy-url');
+    if (!productId) return;
+
+    try {
+      const res = await fetch(`${proxyBase}/badge?productId=${productId}`);
+      if (res.ok) {
+        const html = await res.text();
+        if (html) {
+          el.innerHTML = html;
+          el.style.display = 'inline';
+        }
+      }
+    } catch (e) {
+      console.warn('PetFilter badge error:', e);
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Pet Badge",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Fallback badge text",
+      "default": "Pet Friendly"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Fallback badge color",
+      "default": "#22c55e"
+    }
+  ]
+}
+{% endschema %}

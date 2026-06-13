@@ -1,0 +1,136 @@
+<div class="petfilter-profile-section">
+  <div class="petfilter-profile-card" style="
+    padding: {{ block.settings.padding }}px;
+    text-align: {{ block.settings.alignment }};
+    background: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+  ">
+    {% if block.settings.show_icon %}
+      <div class="petfilter-profile-icon" style="font-size: 2.5rem; line-height: 1;">
+        {{ block.settings.icon_emoji | default: '🐾' }}
+      </div>
+    {% endif %}
+
+    <h3 style="margin: 0.5rem 0 0.25rem; font-size: 1.25rem;">
+      {{ block.settings.heading | default: 'Create a Pet Profile' }}
+    </h3>
+
+    {% if block.settings.show_description %}
+      <p style="margin: 0 0 1rem; color: {{ block.settings.text_color }}; font-size: 0.9rem;">
+        {{ block.settings.description | default: 'Help us find the perfect products for your furry friend!' }}
+      </p>
+    {% endif %}
+
+    <a
+      href="/apps/pet-filter/profile"
+      class="petfilter-profile-button"
+      style="
+        display: inline-block;
+        padding: 0.6rem 1.5rem;
+        border-radius: 9999px;
+        background: {{ block.settings.button_color | default: '#22c55e' }};
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: opacity 0.2s;
+      "
+      onmouseover="this.style.opacity='0.9'"
+      onmouseout="this.style.opacity='1'"
+    >
+      {{ block.settings.button_text | default: 'Create Profile' }}
+    </a>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Create Pet Profile",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Create a Pet Profile"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show pet icon",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "icon_emoji",
+      "label": "Icon emoji",
+      "default": "🐾"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show description",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description",
+      "default": "Help us find the perfect products for your furry friend!"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Create Profile"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button color",
+      "default": "#22c55e"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f9fafb"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#6b7280"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Padding (px)",
+      "min": 12,
+      "max": 60,
+      "default": 32,
+      "step": 4
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius (px)",
+      "min": 0,
+      "max": 24,
+      "default": 12,
+      "step": 4
+    }
+  ]
+}
+{% endschema %}

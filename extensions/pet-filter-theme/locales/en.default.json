@@ -1,0 +1,24 @@
+{
+  "pet_creation": {
+    "button_label": "Add Pet Profile",
+    "modal_title": "My Pets",
+    "login_prompt": "Please log in to manage your pet profiles.",
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again.",
+    "empty": "No pets yet. Add your first pet!",
+    "form": {
+      "name": "Pet Name",
+      "pet_type": "Pet Type",
+      "breed": "Breed",
+      "age": "Age",
+      "weight": "Weight (kg)",
+      "color": "Color",
+      "vaccinated": "Vaccinated",
+      "neutered": "Neutered",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "activate": "Activate"
+    }
+  }
+}

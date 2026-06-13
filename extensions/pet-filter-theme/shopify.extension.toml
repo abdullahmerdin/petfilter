@@ -1,0 +1,7 @@
+# Learn more about configuring app extensions at https://shopify.dev/docs/apps/build/app-extensions
+
+type = "theme_app_extension"
+name = "pet-filter-theme"
+handle = "pet-filter-theme"
+description = "PetFilter - pet compatibility badges, featured products, and pet profiles"
+uid = "b2fc68a3-9c67-f776-f5bf-d4151697ee2babb3b11a"

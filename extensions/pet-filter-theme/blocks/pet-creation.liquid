@@ -1,0 +1,539 @@
+<!-- PetFilter Pet Creation Embed -->
+{% assign proxy_base = '/apps/pet-filter' %}
+{% assign login_url = routes.account_login_url | default: '/account/login' %}
+
+<style>
+/* ─── Floating Button ─── */
+.petfilter-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.petfilter-fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(34, 197, 94, 0.6); }
+.petfilter-fab:active { transform: scale(0.95); }
+
+@keyframes petfilter-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 4px 28px rgba(34, 197, 94, 0.7), 0 0 0 8px rgba(34, 197, 94, 0.1); }
+}
+.petfilter-fab::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid rgba(34, 197, 94, 0.3);
+}
+.petfilter-fab.ring::before {
+  animation: petfilter-ring 2s infinite 0.5s;
+}
+@keyframes petfilter-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+@keyframes petfilter-bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+@keyframes petfilter-glow {
+  0%, 100% { box-shadow: 0 4px 16px var(--btn-color, #22c55e)66; }
+  50% { box-shadow: 0 4px 32px var(--btn-color, #22c55e), 0 0 60px var(--btn-color, #22c55e)44; }
+}
+
+/* ─── Modal ─── */
+.petfilter-overlay {
+  display: none; position: fixed; inset: 0; z-index: 10000;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  animation: petfilter-fadeIn 0.2s ease;
+}
+.petfilter-overlay.open { display: block; }
+
+.petfilter-modal {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 10001; background: #fff;
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+  animation: petfilter-slideUp 0.3s ease;
+  padding: 28px;
+}
+#petfilter-modal-body {
+  min-height: 240px;
+}
+@media (min-width: 640px) {
+  .petfilter-modal {
+    top: 50%; left: 50%; right: auto; bottom: auto;
+    transform: translate(-50%, -50%);
+    width: 520px; max-height: 80vh; border-radius: 20px;
+    animation: petfilter-scaleIn 0.25s ease;
+  }
+}
+
+@keyframes petfilter-fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes petfilter-slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes petfilter-scaleIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
+.petfilter-modal-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+}
+.petfilter-modal-header h2 { margin: 0; font-size: 1.5rem; font-weight: 700; color: #111; }
+.petfilter-modal-close {
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  background: #f3f4f6; cursor: pointer; font-size: 20px;
+  display: flex; align-items: center; justify-content: center; color: #6b7280;
+  transition: background 0.2s;
+}
+.petfilter-modal-close:hover { background: #e5e7eb; }
+
+/* ─── Login Card ─── */
+.petfilter-login-card {
+  text-align: center; padding: 40px 20px;
+}
+.petfilter-login-card .petfilter-icon { font-size: 56px; margin-bottom: 16px; }
+.petfilter-login-card h3 { margin: 0 0 8px; font-size: 1.4rem; color: #111; }
+.petfilter-login-card p { margin: 0 0 24px; color: #6b7280; font-size: 1.05rem; line-height: 1.5; }
+
+/* ─── Agreement ─── */
+.petfilter-agreement {
+  text-align: center; padding: 20px 0;
+}
+.petfilter-agreement .petfilter-icon { font-size: 48px; margin-bottom: 12px; }
+.petfilter-agreement h3 { margin: 0 0 8px; font-size: 1.3rem; }
+.petfilter-agreement p { margin: 0 0 20px; color: #6b7280; font-size: 1rem; line-height: 1.5; }
+.petfilter-agreement-terms {
+  background: #f9fafb; border-radius: 12px; padding: 16px; margin-bottom: 20px;
+  text-align: left; font-size: 0.95rem; color: #4b5563; line-height: 1.6;
+  max-height: 160px; overflow-y: auto;
+}
+
+/* ─── Buttons ─── */
+.petfilter-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 32px; border-radius: 9999px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff; border: none; font-size: 1.1rem; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.petfilter-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
+.petfilter-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.petfilter-btn-secondary {
+  padding: 10px 24px; border-radius: 9999px;
+  background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb;
+  font-size: 1rem; font-weight: 500; cursor: pointer;
+  transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.petfilter-btn-danger {
+  padding: 8px 16px; border-radius: 9999px; background: #fef2f2;
+  color: #dc2626; border: 1px solid #fecaca; font-size: 0.95rem;
+  font-weight: 500; cursor: pointer; transition: background 0.2s;
+}
+.petfilter-btn-danger:hover { background: #fee2e2; }
+
+/* ─── Pets List ─── */
+.petfilter-pets-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.petfilter-pet-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 12px;
+  border: 1px solid #e5e7eb; background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.petfilter-pet-card.active { border-color: #22c55e; background: #f0fdf4; box-shadow: 0 0 0 2px rgba(34,197,94,0.15); }
+.petfilter-pet-avatar {
+  width: 50px; height: 50px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.petfilter-pet-info { flex: 1; min-width: 0; }
+.petfilter-pet-name { font-weight: 600; font-size: 1.1rem; color: #111; display: flex; align-items: center; gap: 6px; }
+.petfilter-pet-detail { font-size: 1rem; color: #6b7280; margin-top: 2px; }
+.petfilter-pet-active-badge {
+  font-size: 0.8rem; padding: 2px 10px; border-radius: 9999px;
+  background: #22c55e; color: #fff; font-weight: 600;
+}
+.petfilter-pet-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.petfilter-empty-state { text-align: center; padding: 40px 20px; }
+.petfilter-empty-state p { margin: 4px 0; font-size: 1.05rem; color: #9ca3af; }
+
+/* ─── Form ─── */
+.petfilter-form { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.petfilter-form-row { display: flex; gap: 12px; }
+.petfilter-form-row > * { flex: 1; }
+.petfilter-form label { font-weight: 600; font-size: 1.05rem; color: #111; display: flex; flex-direction: column; gap: 6px; }
+.petfilter-form input, .petfilter-form select {
+  padding: 12px 14px; border-radius: 10px; border: 1px solid #d1d5db;
+  font-size: 1.05rem; color: #111; background: #fff;
+  transition: border-color 0.2s; width: 100%; box-sizing: border-box;
+}
+.petfilter-form input:focus, .petfilter-form select:focus {
+  outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+}
+.petfilter-form-checkbox { flex-direction: row !important; align-items: center; gap: 8px !important; }
+.petfilter-form-checkbox input[type="checkbox"] { width: 18px; height: 18px; accent-color: #22c55e; }
+.petfilter-form-submit { margin-top: 4px; }
+.petfilter-loading { text-align: center; color: #9ca3af; padding: 20px; }
+
+/* ─── Loading spinner ─── */
+.petfilter-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+.petfilter-spinner::after {
+  content: '';
+  width: 36px;
+  height: 36px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #22c55e;
+  border-radius: 50%;
+  animation: petfilter-spin 0.8s linear infinite;
+}
+@keyframes petfilter-spin {
+  to { transform: rotate(360deg); }
+}
+.petfilter-error-msg { background: #fef2f2; color: #dc2626; padding: 10px 14px; border-radius: 10px; font-size: 0.95rem; margin-bottom: 8px; border: 1px solid #fecaca; }
+
+@media (max-width: 480px) {
+  .petfilter-fab { bottom: 16px; right: 16px; width: 54px; height: 54px; font-size: 24px; }
+  .petfilter-form-row { flex-direction: column; }
+}
+</style>
+
+<!-- Floating Button -->
+<button class="petfilter-fab" id="petfilter-fab" aria-label="Pet Profile" title="My Pets">🐾</button>
+
+<!-- Overlay -->
+<div class="petfilter-overlay" id="petfilter-overlay"></div>
+
+<!-- Modal -->
+<div class="petfilter-modal" id="petfilter-modal">
+  <div class="petfilter-modal-header">
+    <h2 id="petfilter-modal-title">My Pets</h2>
+    <button class="petfilter-modal-close" id="petfilter-modal-close">✕</button>
+  </div>
+  <div id="petfilter-modal-body"></div>
+</div>
+
+<script>
+(function() {
+  const CUSTOMER_ID = '{{ customer.id }}';
+  const PROXY = '{{ proxy_base }}';
+  const LOGIN_URL = '{{ login_url }}';
+
+  let BUTTON_CONFIG = {
+    enabled: true, color: '#22c55e', animation: 'pulse',
+    position: 'right', bottomOffset: 24,
+  };
+  let pets = [];
+  let editingId = null;
+  let hasActivePet = false;
+  let deleteConfirmId = null;
+  let contentLoaded = false; // true after first successful load
+
+  const fab = document.getElementById('petfilter-fab');
+  const overlay = document.getElementById('petfilter-overlay');
+  const modal = document.getElementById('petfilter-modal');
+  const closeBtn = document.getElementById('petfilter-modal-close');
+  const body = document.getElementById('petfilter-modal-body');
+
+  const PET_EMOJIS = { dog:'🐕', cat:'🐱', bird:'🐦', fish:'🐟', rabbit:'🐰', hamster:'🐹', reptile:'🦎', other:'🐾' };
+  const PET_TYPES = ['dog','cat','bird','fish','rabbit','hamster','reptile','other'];
+  const AGES = [
+    {value:'baby', label:'Baby / Puppy / Kitten'},
+    {value:'young', label:'Young'},
+    {value:'adult', label:'Adult'},
+    {value:'senior', label:'Senior'},
+  ];
+
+  // Settings loader
+  (async function loadSettings() {
+    try {
+      const res = await fetch(PROXY + '/settings');
+      if (res.ok) {
+        const data = await res.json();
+        BUTTON_CONFIG = {
+          enabled: data.petButtonEnabled,
+          color: data.petButtonColor,
+          animation: data.petButtonAnimation,
+          position: data.petButtonPosition,
+          bottomOffset: data.petButtonBottomOffset,
+        };
+      }
+    } catch(e) {}
+    if (fab) applyConfig();
+  })();
+
+  function getGradient(hex) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `linear-gradient(135deg, ${hex}, #${Math.max(0,r-40).toString(16).padStart(2,'0')}${Math.max(0,g-40).toString(16).padStart(2,'0')}${Math.max(0,b-40).toString(16).padStart(2,'0')})`;
+  }
+
+  function applyConfig() {
+    if (!BUTTON_CONFIG.enabled) { fab.style.display = 'none'; return; }
+    fab.style.display = 'flex';
+    const grad = getGradient(BUTTON_CONFIG.color);
+    fab.style.background = grad;
+    fab.style.setProperty('--btn-color', BUTTON_CONFIG.color);
+    fab.style[BUTTON_CONFIG.position] = BUTTON_CONFIG.bottomOffset + 'px';
+    fab.style[BUTTON_CONFIG.position === 'right' ? 'left' : 'right'] = 'auto';
+    if (hasActivePet) {
+      fab.style.animation = 'none';
+      fab.classList.remove('ring');
+    } else {
+      fab.style.animation = BUTTON_CONFIG.animation === 'pulse' ? 'petfilter-pulse 2s infinite'
+        : BUTTON_CONFIG.animation === 'bounce' ? 'petfilter-bounce 2s infinite'
+        : BUTTON_CONFIG.animation === 'glow' ? 'petfilter-glow 2s infinite'
+        : 'none';
+      if (BUTTON_CONFIG.animation === 'pulse') {
+        fab.classList.add('ring');
+      } else {
+        fab.classList.remove('ring');
+      }
+    }
+  }
+
+  // ─── Modal ───
+  function openModal() {
+    overlay.classList.add('open');
+    modal.style.display = 'block';
+    if (!CUSTOMER_ID) {
+      showLoginCard();
+      return;
+    }
+    loadContent();
+  }
+  function closeModal() { overlay.classList.remove('open'); modal.style.display = 'none'; editingId = null; deleteConfirmId = null; }
+
+  fab.addEventListener('click', openModal);
+  overlay.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+
+  // ─── Login Card ───
+  function showLoginCard() {
+    document.getElementById('petfilter-modal-title').textContent = 'Welcome!';
+    body.innerHTML = `
+      <div class="petfilter-login-card">
+        <div class="petfilter-icon">🐾</div>
+        <h3>Welcome to PetFilter!</h3>
+        <p>Please log in to your account to create and manage pet profiles for personalized product recommendations.</p>
+        <a href="${LOGIN_URL}" class="petfilter-btn-primary" style="text-decoration:none;">
+          🔑 Sign In
+        </a>
+        <p style="margin-top:16px;font-size:1rem;color:#9ca3af;">
+          Don't have an account? <a href="/account/register" style="color:#22c55e;font-weight:500;">Create one</a>
+        </p>
+      </div>
+    `;
+  }
+
+  // ─── Content ───
+  async function api(url, opts) {
+    try { const res = await fetch(url, opts); return res.json(); } catch(e) { return { error: true }; }
+  }
+
+  async function loadContent() {
+    // Data cached mi? Varsa hemen göster, arkada refresh yap
+    if (contentLoaded) {
+      renderPetsList();
+      try {
+        const agreeData = await api(PROXY + '/pets?action=check-agreement&customerId=' + CUSTOMER_ID);
+        if (!agreeData.error && agreeData.agreed) {
+          await loadPetsList();
+        }
+      } catch(e) {}
+      return;
+    }
+    // İlk açılış: spinner göster, veri gelince değiş
+    body.innerHTML = '<div class="petfilter-spinner"></div>';
+    try {
+      const agreeData = await api(PROXY + '/pets?action=check-agreement&customerId=' + CUSTOMER_ID);
+      if (agreeData.error) throw new Error('API error');
+      if (!agreeData.agreed) { showAgreement(); }
+      else { await loadPetsList(); }
+    } catch(e) {
+      body.innerHTML = `<div class="petfilter-empty-state">
+        <p><strong>Something went wrong</strong></p>
+        <p style="color:#6b7280">Please try again later.</p>
+        <br>
+        <button class="petfilter-btn-secondary" onclick="window.petfilterRetry()">🔄 Retry</button>
+      </div>`;
+    }
+  }
+
+  window.petfilterRetry = function() { loadContent(); };
+
+  function showAgreement() {
+    document.getElementById('petfilter-modal-title').textContent = 'Welcome!';
+    body.innerHTML = `
+      <div class="petfilter-agreement">
+        <div class="petfilter-icon">🐾</div>
+        <h3>Welcome to PetFilter!</h3>
+        <p>Create a profile for your pet and discover products they'll love.</p>
+        <div class="petfilter-agreement-terms">
+          <strong>Terms of Use</strong><br><br>
+          By using PetFilter, you agree to:<br>
+          • Store your pet's profile information securely<br>
+          • Receive personalized product recommendations<br>
+          • Allow us to analyze compatibility with our product catalog<br><br>
+          Your pet's data is only used for matching purposes and is never shared with third parties.
+          You can delete your pet's profile at any time.
+        </div>
+        <button class="petfilter-btn-primary" onclick="window.petfilterAgree()">
+          ✓ I Agree &amp; Continue
+        </button>
+      </div>
+    `;
+  }
+
+  window.petfilterAgree = async function() {
+    const btn = document.querySelector('.petfilter-btn-primary');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    const fd = new FormData();
+    fd.append('action', 'agree-terms');
+    fd.append('customerId', CUSTOMER_ID);
+    await api(PROXY + '/pets', { method: 'POST', body: fd });
+    await loadPetsList();
+  };
+
+  async function loadPetsList() {
+    const data = await api(PROXY + '/pets?action=list&customerId=' + CUSTOMER_ID);
+    pets = data.pets || [];
+    hasActivePet = pets.some(p => p.isActive);
+    contentLoaded = true;
+    applyConfig();
+    renderPetsList();
+  }
+
+  function setActiveBtn(p) {
+    return `<button class="petfilter-btn-secondary" onclick="window.petfilterSetActive('${p.id}')" title="Set as active pet">Activate</button>`;
+  }
+
+  function petEmoji(type) { return PET_EMOJIS[type] || '🐾'; }
+
+  function renderPetsList() {
+    document.getElementById('petfilter-modal-title').textContent = 'My Pets';
+    const colors = ['#dcfce7','#dbeafe','#fef3c7','#fce7f3','#e0e7ff','#ccfbf1'];
+    let html = '';
+    if (pets.length > 0) {
+      html += '<div class="petfilter-pets-list">';
+      pets.forEach((p, i) => {
+        html += `<div class="petfilter-pet-card${p.isActive ? ' active' : ''}">
+          <div class="petfilter-pet-avatar" style="background:${colors[i%colors.length]}">${petEmoji(p.petType)}</div>
+          <div class="petfilter-pet-info">
+            <div class="petfilter-pet-name">${p.name}${p.isActive ? '<span class="petfilter-pet-active-badge">Active</span>' : ''}</div>
+            <div class="petfilter-pet-detail">${p.petType}${p.breed ? ' · '+p.breed : ''}${p.age ? ' · '+p.age : ''}</div>
+          </div>
+          <div class="petfilter-pet-actions">
+            <button class="petfilter-btn-secondary" onclick="window.petfilterShowForm('${p.id}')" title="Edit">✏️</button>
+            ${!p.isActive ? setActiveBtn(p) : ''}
+            ${deleteConfirmId === p.id
+              ? `<button class="petfilter-btn-danger" style="background:#dc2626;color:#fff;font-weight:700" onclick="window.petfilterConfirmDelete('${p.id}')" title="Confirm delete">✓ Delete?</button>`
+              : `<button class="petfilter-btn-danger" onclick="window.petfilterDelete('${p.id}')" title="Delete">✕</button>`}
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+      html += '<button class="petfilter-btn-primary" onclick="window.petfilterShowForm()" style="width:100%;justify-content:center;margin-top:8px">＋ Add Another Pet</button>';
+    } else {
+      html = `<div class="petfilter-empty-state">
+        <div style="font-size:48px;margin-bottom:8px">🐾</div>
+        <p><strong>No pets yet!</strong></p>
+        <p style="color:#6b7280">Create your first pet profile to get personalized recommendations.</p>
+        <br>
+        <button class="petfilter-btn-primary" onclick="window.petfilterShowForm()">＋ Create Pet Profile</button>
+      </div>`;
+    }
+    body.innerHTML = html;
+  }
+
+  window.petfilterSetActive = async function(petId) { deleteConfirmId = null;
+    const fd = new FormData(); fd.append('action','set-active'); fd.append('customerId',CUSTOMER_ID); fd.append('petId',petId);
+    await api(PROXY + '/pets', { method: 'POST', body: fd });
+    await loadPetsList();
+  };
+
+  window.petfilterDelete = function(petId) {
+    deleteConfirmId = petId;
+    renderPetsList();
+  };
+
+  window.petfilterConfirmDelete = async function(petId) {
+    deleteConfirmId = null;
+    const fd = new FormData(); fd.append('action','delete'); fd.append('customerId',CUSTOMER_ID); fd.append('petId',petId);
+    await api(PROXY + '/pets', { method: 'POST', body: fd });
+    await loadPetsList();
+  };
+
+  window.petfilterShowForm = function(editId) { deleteConfirmId = null;
+    editingId = editId || null;
+    document.getElementById('petfilter-modal-title').textContent = editingId ? 'Edit Pet' : 'Add a Pet';
+    const pet = editingId ? pets.find(p => p.id === editingId) : {};
+    body.innerHTML = `
+      <form class="petfilter-form" id="petfilter-form">
+        <div class="petfilter-form-row">
+          <label>Pet Name *<input type="text" name="name" value="${pet.name||''}" required placeholder="e.g. Max"></label>
+          <label>Pet Type *<select name="petType" required>
+            <option value="">Select...</option>
+            ${PET_TYPES.map(t => `<option value="${t}" ${pet.petType===t?'selected':''}>${petEmoji(t)} ${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('')}
+          </select></label>
+        </div>
+        <div class="petfilter-form-row">
+          <label>Breed<input type="text" name="breed" value="${pet.breed||''}" placeholder="e.g. Golden Retriever"></label>
+          <label>Age Group<select name="age"><option value="">Select...</option>${AGES.map(a => `<option value="${a.value}" ${pet.age===a.value?'selected':''}>${a.label}</option>`).join('')}</select></label>
+        </div>
+        <div class="petfilter-form-row">
+          <label>Weight<input type="text" name="weight" value="${pet.weight||''}" placeholder="e.g. 25 kg"></label>
+          <label>Color<input type="text" name="color" value="${pet.color||''}" placeholder="e.g. Golden"></label>
+        </div>
+        <div class="petfilter-form-row">
+          <label class="petfilter-form-checkbox"><input type="checkbox" name="vaccinated" value="true" ${pet.vaccinated?'checked':''}> Vaccinated</label>
+          <label class="petfilter-form-checkbox"><input type="checkbox" name="neutered" value="true" ${pet.neutered?'checked':''}> Neutered / Spayed</label>
+        </div>
+        <label class="petfilter-form-checkbox"><input type="checkbox" name="setActive" value="true" ${pet.isActive||pets.length===0?'checked':''}> Set as active pet</label>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button type="submit" class="petfilter-btn-primary petfilter-form-submit" style="flex:1;justify-content:center">${editingId?'💾 Save Changes':'➕ Add Pet'}</button>
+          <button type="button" class="petfilter-btn-secondary" onclick="window.petfilterBack()">Cancel</button>
+        </div>
+      </form>`;
+    document.getElementById('petfilter-form').addEventListener('submit', async (e) => {
+      e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Saving...';
+      const fd = new FormData(e.target);
+      fd.append('action', editingId ? 'update' : 'create');
+      fd.append('customerId', CUSTOMER_ID);
+      if (editingId) fd.append('petId', editingId);
+      await api(PROXY + '/pets', { method: 'POST', body: fd });
+      await loadPetsList();
+    });
+  };
+
+  window.petfilterBack = function() { editingId = null; deleteConfirmId = null; loadPetsList(); };
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Pet Creation",
+  "target": "body",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "🐾 Floating pet creation button for your storefront. Add this block to the Footer section to show it on every page. Guests see a login prompt; logged-in customers can create and manage pet profiles."
+    }
+  ]
+}
+{% endschema %}

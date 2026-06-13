@@ -1,0 +1,90 @@
+<div class="petfilter-featured">
+  <div class="petfilter-featured-header">
+    <h2>{{ block.settings.heading | default: 'Best Matches for Your Pet' }}</h2>
+    {% if block.settings.show_description %}
+      <p>{{ block.settings.description | default: 'Products your pet will love' }}</p>
+    {% endif %}
+  </div>
+
+  <div class="petfilter-featured-grid" data-proxy="/apps/pet-filter">
+    {%- comment %}featured_products: reserved for future collection-based filtering{% endcomment -%}
+    {% assign featured_products = block.settings.featured_collection %}
+    <p class="petfilter-loading">Loading pet-friendly products...</p>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const grid = document.querySelector('.petfilter-featured-grid');
+    if (!grid) return;
+
+    const proxyBase = grid.getAttribute('data-proxy');
+
+    fetch(`${proxyBase}/best-matches?limit=8`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.products || data.products.length === 0) {
+          grid.innerHTML = '<p class="petfilter-empty">No pet-friendly products found.</p>';
+          return;
+        }
+
+        grid.innerHTML = data.products.map(p => `
+          <a href="/products/${p.handle}" class="petfilter-product-card">
+            <div class="petfilter-product-image">
+              <img src="${p.image || ''}" alt="${p.title}" loading="lazy" />
+            </div>
+            <div class="petfilter-product-info">
+              <h3>${p.title}</h3>
+              <p class="petfilter-price">${p.price || ''}</p>
+              ${p.badge ? `<span class="petfilter-badge">${p.badge}</span>` : ''}
+            </div>
+          </a>
+        `).join('');
+      })
+      .catch(() => {
+        grid.innerHTML = '<p class="petfilter-error">Unable to load recommendations.</p>';
+      });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Featured Products",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Best Matches for Your Pet"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show description",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description",
+      "default": "Products your pet will love"
+    },
+    {
+      "type": "collection",
+      "id": "featured_collection",
+      "label": "Featured collection (optional)",
+      "info": "Limit to a specific collection"
+    },
+    {
+      "type": "range",
+      "id": "max_products",
+      "label": "Maximum products",
+      "min": 2,
+      "max": 20,
+      "default": 8,
+      "step": 2
+    }
+  ]
+}
+{% endschema %}

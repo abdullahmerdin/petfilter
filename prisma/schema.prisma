@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+
+  @@index([shop])
+}
+
+model ShopSettings {
+  id                   String   @id @default(uuid())
+  shop                 String   @unique
+  appInstalled         Boolean  @default(true)
+  badgeEnabled         Boolean  @default(true)
+  badgeColor           String   @default("#008060")
+  badgeText            String   @default("Pet Friendly")
+  buttonLabel          String   @default("Find Compatible Friends")
+  hasSeenWelcome       Boolean  @default(false)
+  trialEndsAt          DateTime?
+  subscriptionId       String?
+  billingPlan          String   @default("free")
+  petButtonEnabled     Boolean  @default(true)
+  petButtonColor       String   @default("#22c55e")
+  petButtonAnimation   String   @default("pulse")
+  petButtonPosition    String   @default("right")
+  petButtonBottomOffset Int     @default(24)
+  hasCompletedOnboarding Boolean @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model PetProfile {
+  id                String   @id @default(uuid())
+  shop              String
+  productId         String   @unique
+  productHandle     String?
+  productTitle      String?
+  petType           String?
+  breed             String?
+  size              String?
+  ageGroup          String?
+  dietaryNeeds      String?
+  temperament       String?
+  color             String?
+  weight            String?
+  vaccinated        Boolean  @default(false)
+  neutered          Boolean  @default(false)
+  metaobjectId      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([shop])
+  @@index([petType])
+  @@index([shop, petType])
+}
+
+model FilterRule {
+  id          String   @id @default(uuid())
+  shop        String
+  name        String
+  description String?
+  petType     String?
+  breedFilter String?
+  sizeFilter  String?
+  ageFilter   String?
+  dietFilter  String?
+  temperamentFilter String?
+  colorFilter String?
+  weightMin   Float?
+  weightMax   Float?
+  vaccinated  Boolean?
+  neutered    Boolean?
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shop])
+  @@index([shop, isActive])
+}
+
+model GdprRequest {
+  id         String   @id @default(uuid())
+  shop       String
+  customerId String?
+  email      String?
+  phone      String?
+  topic      String
+  payload    String
+  handledAt  DateTime @default(now())
+
+  @@index([shop])
+  @@index([topic])
+}
+
+model CustomerPet {
+  id          String   @id @default(uuid())
+  shop        String
+  customerId  String
+  name        String
+  petType     String
+  breed       String?
+  age         String?
+  weight      String?
+  color       String?
+  vaccinated  Boolean  @default(false)
+  neutered    Boolean  @default(false)
+  isActive    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shop, customerId])
+  @@index([shop, customerId, isActive])
+}
+
+model CustomerAgreement {
+  id          String   @id @default(uuid())
+  shop        String
+  customerId  String
+  agreedAt    DateTime @default(now())
+
+  @@unique([shop, customerId])
+  @@index([shop])
+}

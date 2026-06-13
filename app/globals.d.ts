@@ -1,0 +1,64 @@
+declare module "*.css";
+
+declare namespace JSX {
+  interface IntrinsicElements {
+    "s-app-nav": any;
+    "s-page": any;
+    "s-layout": any;
+    "s-card": any;
+    "s-section": any;
+    "s-button": any;
+    "s-link": any;
+    "s-text": any;
+    "s-heading": any;
+    "s-paragraph": any;
+    "s-stack": any;
+    "s-box": any;
+    "s-spacer": any;
+    "s-banner": any;
+    "s-divider": any;
+    "s-data-table": any;
+    "s-modal": any;
+    "s-form-layout": any;
+    "s-text-field": any;
+    "s-select": any;
+    "s-choice-list": any;
+    "s-radio-button": any;
+    "s-checkbox": any;
+    "s-tag": any;
+    "s-badge": any;
+    "s-spinner": any;
+    "s-empty-state": any;
+    "s-icon": any;
+    "s-tooltip": any;
+    "s-popover": any;
+    "s-action-menu": any;
+    "s-listbox": any;
+    "s-option": any;
+    "s-tabs": any;
+    "s-tab": any;
+    "s-pagination": any;
+    "s-thumbnail": any;
+    "s-avatar": any;
+    "s-block-stack": any;
+    "s-inline-stack": any;
+    "s-grid": any;
+    "s-navigation": any;
+    "s-nav-item": any;
+    "s-frame": any;
+    "s-top-bar": any;
+    "s-unordered-list": any;
+    "s-list-item": any;
+    "s-inline-code": any;
+    "s-progress-bar": any;
+    "s-skeleton-body-text": any;
+    "s-skeleton-display-text": any;
+    "s-skeleton-page": any;
+    "s-skeleton-thumbnail": any;
+    "s-tag-group": any;
+    "s-truncate": any;
+    "s-drop-zone": any;
+    "ui-page": any;
+    "ui-nav-menu": any;
+    }
+}
