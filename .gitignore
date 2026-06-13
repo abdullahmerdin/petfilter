@@ -8,3 +8,4 @@ prisma/dev.sqlite-journal/
 *.log
 dist/
 .cache/
+api/build/
