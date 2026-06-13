@@ -2,7 +2,7 @@
 
 client_id = "6622b9ec20514b3b06a90c4331aea37f"
 name = "PetFilter"
-application_url = "https://etc-folding-challenged-criterion.trycloudflare.com"
+application_url = "https://petfilter.vercel.app"
 embedded = true
 
 [build]
@@ -18,7 +18,7 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "http://localhost:3000/auth", "https://acids-seeking-lover-stockholm.trycloudflare.com/auth" ]
+redirect_urls = [ "http://localhost:3000/auth", "https://petfilter.vercel.app/auth" ]
 
 [app_proxy]
 url = "/proxy"
